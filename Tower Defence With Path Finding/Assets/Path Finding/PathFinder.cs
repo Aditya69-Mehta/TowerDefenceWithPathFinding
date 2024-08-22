@@ -5,11 +5,20 @@ using UnityEngine;
 
 public class PathFinder : MonoBehaviour
 {
-    [SerializeField] Node currSearchNode;
+    [SerializeField] Vector2Int startCoord;
+    [SerializeField] Vector2Int endCoord;
+
+    Node startNode;
+    Node endNode;
+    Node currSearchNode;
+
+    Queue<Node> frontier = new Queue<Node>();
+    Dictionary<Vector2Int, Node> reached = new Dictionary<Vector2Int, Node>();
+
     Vector2Int[] searchDirections = {Vector2Int.right, Vector2Int.left, Vector2Int.up, Vector2Int.down};
     GridManager gridManager;
 
-    Dictionary<Vector2Int, Node> grid;
+    Dictionary<Vector2Int, Node> grid = new Dictionary<Vector2Int, Node>();
 
     void Awake(){
         gridManager = FindObjectOfType<GridManager>();
@@ -20,7 +29,11 @@ public class PathFinder : MonoBehaviour
 
     void Start()
     {
-        ExploreNeighbors();
+        startNode = gridManager.Grid[startCoord];
+        endNode = gridManager.Grid[endCoord];
+
+        BreadthFirstSearch();
+        BuildPath();
     }
 
     void ExploreNeighbors()
@@ -35,17 +48,49 @@ public class PathFinder : MonoBehaviour
 
                 //TODO: Remove after testing.
                 // Tester(neighborCoords);
-                grid[neighborCoords].isExplored = true;
-                grid[currSearchNode.coordinates].isPath = true;
-                Debug.Log("Color");
-            }else{
-                Debug.Log("No");
+                // Debug.Log("Color" + neighborCoords);
+            }
+        }
+
+        foreach(Node neighbor in neighbors){
+            if(!reached.ContainsKey(neighbor.coordinates) && neighbor.isWalkable){
+                neighbor.connectedTo = currSearchNode;
+                frontier.Enqueue(neighbor);
+                reached.Add(neighbor.coordinates, neighbor);
             }
         }
     }
 
-    void Tester(Vector2Int neighborCoords){
-        grid[neighborCoords].isExplored = true;
-        grid[currSearchNode.coordinates].isPath = true;
+    void BreadthFirstSearch(){
+        bool isRunning = true;
+
+        frontier.Enqueue(startNode);
+        reached.Add(startCoord, startNode);
+
+        while(frontier.Count > 0 && isRunning){
+            currSearchNode = frontier.Dequeue();
+            currSearchNode.isExplored = true;
+            ExploreNeighbors();
+            if(currSearchNode.coordinates == endCoord){
+                isRunning = false;
+            }
+        }
+    }
+
+    List<Node> BuildPath(){
+        List<Node> path = new List<Node>();
+        Node currNode = endNode;
+
+        currNode.isPath = true;
+        path.Add(currNode);
+
+        while(currNode.connectedTo != null){
+            currNode = currNode.connectedTo;
+            currNode.isPath = true;
+            path.Add(currNode);
+        }
+
+        path.Reverse();
+        return path;
     }
 }

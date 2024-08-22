@@ -4,14 +4,14 @@ using UnityEngine;
 using TMPro;
 using System;
 
-[RequireComponent(typeof(TextMeshPro))]
 [ExecuteAlways]
+[RequireComponent(typeof(TextMeshPro))]
 public class CordDisp : MonoBehaviour
 {
-    [SerializeField] Color defaultColor = Color.white;
-    [SerializeField] Color blockedColor = Color.gray;
+    Color defaultColor = Color.white;
+    Color blockedColor = Color.gray;
     Color exploredColor = Color.yellow;
-    Color pathColor = Color.blue; // Orange new Color(1f, .5f, 0f)
+    Color pathColor = Color.magenta; // Orange new Color(1f, .5f, 0f)
 
     Vector2Int coord = new Vector2Int();
     TextMeshPro coordText;
@@ -25,7 +25,7 @@ public class CordDisp : MonoBehaviour
         coordText.enabled = false;
         
         gridManager = FindObjectOfType<GridManager>();
-        // DispCoord();
+        DispCoord();
     }
 
     void Update()

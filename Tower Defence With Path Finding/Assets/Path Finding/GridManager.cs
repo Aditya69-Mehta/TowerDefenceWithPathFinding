@@ -23,7 +23,7 @@ public class GridManager : MonoBehaviour
     void CreateGrid()
     {
         for(int x = 0; x < gridSize.x; x++){
-            for(int y=0; y < gridSize.y; y++){
+            for(int y = 0; y < gridSize.y; y++){
                 Vector2Int coord = new Vector2Int(x,y);
                 grid.Add(coord, new Node(coord, true));
                 // Debug.Log(grid[coord].coordinates +" = "+ grid[coord].isWalkable);
