@@ -4,22 +4,28 @@ using UnityEngine;
 using TMPro;
 using System;
 
-[RequireComponent(typeof(TextMeshPro))]
 [ExecuteAlways]
+[RequireComponent(typeof(TextMeshPro))]
 public class CordDisp : MonoBehaviour
 {
+    Color defaultColor = Color.white;
+    Color blockedColor = Color.gray;
+    Color exploredColor = Color.yellow;
+    Color pathColor = Color.magenta; // Orange new Color(1f, .5f, 0f)
+
     Vector2Int coord = new Vector2Int();
     TextMeshPro coordText;
 
-    Waypoint waypoint;
 
+    GridManager gridManager;
 
 
     void Awake(){
         coordText = GetComponent<TextMeshPro>();
         coordText.enabled = false;
         
-        waypoint = GetComponentInParent<Waypoint>();
+        gridManager = FindObjectOfType<GridManager>();
+        DispCoord();
     }
 
     void Update()
@@ -29,9 +35,9 @@ public class CordDisp : MonoBehaviour
             coordText.enabled =true;
         }
 
-        if(Application.isPlaying) coordText.enabled = false;
-        ChangeCoordColor();
+        // if(Application.isPlaying) coordText.enabled = false;
         ToggleCoord();
+        ChangeCoordColor();
     }
 
     void ToggleCoord()
@@ -43,8 +49,19 @@ public class CordDisp : MonoBehaviour
 
     void ChangeCoordColor()
     {
-        if(!waypoint.IsPlaceable){
-            coordText.color = Color.gray;
+        if(gridManager == null) return;
+
+        Node node = gridManager.GetNode(coord);
+        if(node == null) return;
+
+        if(!node.isWalkable){
+            coordText.color = blockedColor;
+        }else if(node.isPath){
+            coordText.color = pathColor;
+        }else if(node.isExplored){
+            coordText.color = exploredColor;
+        }else{
+            coordText.color = defaultColor;
         }
     }
 
@@ -52,7 +69,7 @@ public class CordDisp : MonoBehaviour
     {
         coord.x = Mathf.RoundToInt(transform.parent.position.x / UnityEditor.EditorSnapSettings.move.x);
         coord.y = Mathf.RoundToInt(transform.parent.position.z / UnityEditor.EditorSnapSettings.move.z);
-        coordText.text = $"{coord.y}, {coord.x}";
-        transform.parent.name = "("+coordText.text+")";
+        coordText.text = coord.x + ", " + coord.y;// $"{coord.x}, {coord.y}";
+        transform.parent.name = coord.ToString();// "("+coordText.text+")";
     }
 }
