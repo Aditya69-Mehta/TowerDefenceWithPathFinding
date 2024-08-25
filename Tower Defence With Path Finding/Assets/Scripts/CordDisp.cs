@@ -67,8 +67,10 @@ public class CordDisp : MonoBehaviour
 
     void DispCoord()
     {
-        coord.x = Mathf.RoundToInt(transform.parent.position.x / UnityEditor.EditorSnapSettings.move.x);
-        coord.y = Mathf.RoundToInt(transform.parent.position.z / UnityEditor.EditorSnapSettings.move.z);
+        if(gridManager == null) return;
+        
+        coord.x = Mathf.RoundToInt(transform.parent.position.x / gridManager.EditorGridSize);
+        coord.y = Mathf.RoundToInt(transform.parent.position.z / gridManager.EditorGridSize);
         coordText.text = coord.x + ", " + coord.y;// $"{coord.x}, {coord.y}";
         transform.parent.name = coord.ToString();// "("+coordText.text+")";
     }

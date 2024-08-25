@@ -1,12 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using UnityEngine;
 
 public class PathFinder : MonoBehaviour
 {
     [SerializeField] Vector2Int startCoord;
+    public Vector2Int StartCoord{get{return startCoord;}}
+
     [SerializeField] Vector2Int endCoord;
+    public Vector2Int EndCoord{get{return endCoord;}}
 
     Node startNode;
     Node endNode;
@@ -24,16 +28,25 @@ public class PathFinder : MonoBehaviour
         gridManager = FindObjectOfType<GridManager>();
         if(gridManager != null){
             grid = gridManager.Grid;
+            startNode = grid[startCoord];
+            endNode = grid[endCoord];
         }
+        
     }
 
     void Start()
     {
-        startNode = gridManager.Grid[startCoord];
-        endNode = gridManager.Grid[endCoord];
+        BuildNewPath();
+    }
 
-        BreadthFirstSearch();
-        BuildPath();
+    public List<Node> BuildNewPath(){
+        return BuildNewPath(startCoord);
+    }
+
+    public List<Node> BuildNewPath(Vector2Int coords){
+        gridManager.ResetNodes();
+        BreadthFirstSearch(coords);
+        return BuildPath();
     }
 
     void ExploreNeighbors()
@@ -61,11 +74,17 @@ public class PathFinder : MonoBehaviour
         }
     }
 
-    void BreadthFirstSearch(){
+    void BreadthFirstSearch(Vector2Int coords){
+        startNode.isWalkable = true;
+        endNode.isWalkable = true;
+
+        frontier.Clear();
+        reached.Clear();
+
         bool isRunning = true;
 
-        frontier.Enqueue(startNode);
-        reached.Add(startCoord, startNode);
+        frontier.Enqueue(grid[coords]);
+        reached.Add(coords, grid[coords]);
 
         while(frontier.Count > 0 && isRunning){
             currSearchNode = frontier.Dequeue();
@@ -92,5 +111,28 @@ public class PathFinder : MonoBehaviour
 
         path.Reverse();
         return path;
+    }
+
+    public bool WillBlockPath(Vector2Int coord){
+
+        if(grid.ContainsKey(coord)){
+
+            bool prevState = grid[coord].isWalkable;
+
+            grid[coord].isWalkable = false;
+            List<Node> newPath = BuildNewPath();
+            grid[coord].isWalkable = prevState;
+
+            if(newPath.Count <= 1){
+
+                BuildNewPath();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void ChangePath(){
+        BroadcastMessage("RecalculatePath", false, SendMessageOptions.DontRequireReceiver);
     }
 }
